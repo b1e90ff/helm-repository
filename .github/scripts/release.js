@@ -29,12 +29,11 @@ function createPackageJson(chartName) {
 }
 
 function createReleaseConfig(chartName, repositoryUrl) {
-  const dollar = '$';
   return `export default {
   "branches": ["main"],
   "repositoryUrl": "${repositoryUrl}",
   "npmPublish": false,
-  "tagFormat": "${chartName}-v${dollar}{version}",
+  "tagFormat": "${chartName}-v${version}",
   
   "plugins": [
     ["@semantic-release/commit-analyzer", {
@@ -53,18 +52,18 @@ function createReleaseConfig(chartName, repositoryUrl) {
     "@semantic-release/release-notes-generator",
     
     ["@semantic-release/exec", {
-      "verifyConditionsCmd": "echo Verifying ${dollar}{process.env.npm_package_name}",
-      "prepareCmd": "echo Preparing ${dollar}{process.env.npm_package_name} ${dollar}{nextRelease.version} && (sed --version >/dev/null 2>&1 && sed -i 's/^version:.*/version: ${dollar}{nextRelease.version}/' Chart.yaml || sed -i '' 's/^version:.*/version: ${dollar}{nextRelease.version}/' Chart.yaml)"
+      "verifyConditionsCmd": "echo Verifying ${process.env.npm_package_name}",
+      "prepareCmd": "echo Preparing ${process.env.npm_package_name} ${nextRelease.version} && (sed --version >/dev/null 2>&1 && sed -i 's/^version:.*/version: ${nextRelease.version}/' Chart.yaml || sed -i '' 's/^version:.*/version: ${nextRelease.version}/' Chart.yaml)"
     }],
     
     ["@semantic-release/github", {
-      "successComment": "This ${dollar}{issue.pull_request ? 'PR is included' : 'issue has been resolved'} in version ${dollar}{nextRelease.version} of ${dollar}{process.env.npm_package_name}",
-      "failTitle": "Failed to release ${dollar}{process.env.npm_package_name}"
+      "successComment": "This ${issue.pull_request ? 'PR is included' : 'issue has been resolved'} in version ${nextRelease.version} of ${process.env.npm_package_name}",
+      "failTitle": "Failed to release ${process.env.npm_package_name}"
     }],
     
     ["@semantic-release/git", {
       "assets": ["Chart.yaml", "package.json"],
-      "message": "chore(release): ${dollar}{process.env.npm_package_name}@${dollar}{nextRelease.version} [skip ci]\\n\\n${dollar}{nextRelease.notes}"
+      "message": "chore(release): ${process.env.npm_package_name}@${nextRelease.version} [skip ci]\\n\\n${nextRelease.notes}"
     }]
   ]
 }`;
@@ -89,6 +88,7 @@ async function setupChart(chartPath, repositoryUrl) {
 
 async function releaseChart(chartPath, dryRun = false) {
   const chartName = path.basename(chartPath);
+  const originalCwd = process.cwd();
   console.log(`🚀 ${dryRun ? 'DRY RUN: ' : ''}Releasing ${chartName}...`);
   
   try {
@@ -98,10 +98,10 @@ async function releaseChart(chartPath, dryRun = false) {
     console.log(`✅ ${dryRun ? 'DRY RUN: ' : ''}Released ${chartName}`);
   } catch (error) {
     console.error(`❌ Failed to ${dryRun ? 'dry-run' : 'release'} ${chartName}:`, error.message);
+  } finally {
+    // Always change back to original directory
+    process.chdir(originalCwd);
   }
-  
-  // Change back to root
-  process.chdir(path.join(__dirname, '..', '..'));
 }
 
 async function main() {
