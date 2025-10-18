@@ -1,23 +1,19 @@
 [![Release](https://github.com/b1e90ff/helm-repository/actions/workflows/semantic-release.yml/badge.svg?event=workflow_run)](https://github.com/b1e90ff/helm-repository/actions/workflows/semantic-release.yml)
-# Helm Charts Repository
 
-Automated Helm chart releases with semantic versioning.
+# Helm Repository
 
-## Charts
+Automated Helm chart repository with CI/CD pipeline.
 
-- **istio-gateway**: Istio Gateway configuration
-- **istio-sidecar-configurator**: Automatic Istio sidecar injection
+## CI/CD Pipeline
 
-## Usage
+**Helm CI**: Validates all charts on push/PR
+- Helm linting and template rendering
+- YAML syntax validation
+- Multi-namespace testing
 
-### Conventional Commits
-- `feat(chart):` → Minor version
-- `fix(chart):` → Patch version  
-- `feat(chart)!:` → Major version
+**Semantic Release**: Auto-publishes charts to OCI registry
+- Triggered after successful CI
+- Conventional commits drive versioning
+- Charts publish to GitHub Container Registry
 
-### Setup New Chart
-```bash
-npm run setup
-```
-
-Charts release automatically on main branch based on commit changes.
+Charts auto-release on main branch using semantic versioning.

@@ -1,16 +1,13 @@
 # Istio Sidecar Configurator
 
-A Helm chart to configure Istio sidecar injection for existing namespaces.
+Helm chart for automatic Istio sidecar injection configuration.
 
-## What it does
+## Features
 
-Configures the `istio-injection=enabled` label on namespaces that were created by GitOps tools like FluxCD.
-
-## Installation
-
-```bash
-helm install istio-sidecar-configurator ./istio-sidecar-configurator --namespace your-namespace
-```
+- Configures `istio-injection=enabled` label on namespaces
+- Works with GitOps-managed namespaces (FluxCD, ArgoCD)
+- Pre-install/upgrade hooks for immediate activation
+- RBAC configuration for namespace access
 
 ## Configuration
 
@@ -20,12 +17,6 @@ helm install istio-sidecar-configurator ./istio-sidecar-configurator --namespace
 | `istio.injection` | Istio injection mode (enabled/disabled) | `enabled` |
 | `serviceAccount.create` | Create ServiceAccount | `true` |
 
-## Usage
+## How it works
 
-```bash
-# Enable Istio injection (default)
-helm install istio-sidecar-configurator ./istio-sidecar-configurator --namespace my-app
-
-# Disable Istio injection
-helm install istio-sidecar-configurator ./istio-sidecar-configurator --namespace my-app --set istio.injection=disabled
-```
+Uses Kubernetes Jobs with pre-install hooks to automatically label the target namespace with Istio injection settings. Includes proper RBAC permissions for namespace patching.
