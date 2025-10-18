@@ -2,5 +2,5 @@ apiVersion: v2
 name: istio-gateway
 description: Istio Gateway Helm Chart for Kubernetes Gateway API
 type: application
-version: 0.0.0
+version: 1.0.0
 appVersion: "1.0.0"
