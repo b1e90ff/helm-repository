@@ -38,6 +38,8 @@ function createReleaseConfig(chartName, repositoryUrl) {
   "npmPublish": false,
   "tagFormat": "${chartName}-v${dollar}{version}",
   
+  "extends": "semantic-release-monorepo",
+  
   "plugins": [
     ["@semantic-release/commit-analyzer", {
       "preset": "conventionalcommits",
