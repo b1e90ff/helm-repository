@@ -168,18 +168,18 @@ jobs:
         echo "🔍 Checking for common Helm chart issues..."
         
         # Check for hardcoded namespaces (should use .Release.Namespace)
-        if grep -r "namespace:" . --include="*.yaml" --exclude-dir=".git" --exclude-dir=".github" | grep -v "{{ .Release.Namespace }}" | grep -v "{{ .Values.*namespace" | head -5; then
-          echo "⚠️  Warning: Found potential hardcoded namespaces (review above)"
+        namespace_issues=$(grep -r "namespace:" . --include="*.yaml" --exclude-dir=".git" --exclude-dir=".github" | grep -v "{{ .Release.Namespace }}" | grep -v "{{ .Values.*namespace" || true)
+        if [ -n "$namespace_issues" ]; then
+          echo "⚠️  Warning: Found potential hardcoded namespaces:"
+          echo "$namespace_issues"
+        else
+          echo "✅ No hardcoded namespaces found"
         fi
         
         # Check for missing template functions
         charts="${{ steps.find-charts.outputs.charts }}"
         
         for chart in $charts; do
-          if [ ! -f "$chart/templates/_helpers.tpl" ]; then
-            echo "⚠️  Warning: $chart missing _helpers.tpl (recommended for reusable templates)"
-          fi
-          
           # Check if Chart.yaml has required fields
           if ! grep -q "^name:" "$chart/Chart.yaml"; then
             echo "❌ Error: $chart/Chart.yaml missing 'name' field"
