@@ -1,3 +1,4 @@
+[![Release](https://github.com/b1e90ff/helm-repository/actions/workflows/semantic-release.yml/badge.svg)](https://github.com/b1e90ff/helm-repository/actions/workflows/semantic-release.yml)
 # Helm Charts CI/CD Pipeline
 
 This repository includes a comprehensive GitHub Actions workflow that automatically validates all Helm charts on every push and pull request.

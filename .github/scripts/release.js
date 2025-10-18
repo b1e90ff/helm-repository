@@ -30,8 +30,10 @@ function createPackageJson(chartName) {
 
 function createReleaseConfig(chartName, repositoryUrl) {
   const dollar = '$';
-  return `export default {
-  "branches": ["main"],
+  return `module.exports = {
+  "branches": [
+    { "name": "main" }
+  ],
   "repositoryUrl": "${repositoryUrl}",
   "npmPublish": false,
   "tagFormat": "${chartName}-v${dollar}{version}",
@@ -70,7 +72,7 @@ function createReleaseConfig(chartName, repositoryUrl) {
       "message": "chore(release): ${dollar}{process.env.npm_package_name}@${dollar}{nextRelease.version} [skip ci]\\n\\n${dollar}{nextRelease.notes}"
     }]
   ]
-}`;
+};`;
 }
 
 async function setupChart(chartPath, repositoryUrl) {
@@ -98,8 +100,8 @@ async function releaseChart(chartPath, dryRun = false) {
   try {
     process.chdir(chartPath);
     const command = dryRun ? 
-      'npx semantic-release -e semantic-release-monorepo --dry-run' : 
-      'npx semantic-release -e semantic-release-monorepo';
+      'npx semantic-release --dry-run' : 
+      'npx semantic-release';
     execSync(command, { stdio: 'inherit' });
     console.log(`✅ ${dryRun ? 'DRY RUN: ' : ''}Released ${chartName}`);
   } catch (error) {
