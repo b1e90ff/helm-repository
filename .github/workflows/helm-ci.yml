@@ -23,8 +23,6 @@ jobs:
 
     - name: Set up Kubernetes tools
       uses: azure/setup-kubectl@v4.0.1
-      with:
-        version: '1.31.1'
 
     - name: Find Helm charts
       id: find-charts
