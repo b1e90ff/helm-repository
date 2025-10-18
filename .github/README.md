@@ -9,7 +9,7 @@ The CI pipeline automatically validates all Helm charts:
 - **Chart Discovery**: Finds all charts automatically
 - **Helm Linting**: Validates chart structure and best practices
 - **Template Rendering**: Tests with different namespaces and configurations
-- **YAML Validation**: Ensures generated resources are valid Kubernetes objects
+- **YAML Syntax Validation**: Ensures generated templates have valid YAML syntax
 
 ## Triggered On
 

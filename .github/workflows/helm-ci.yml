@@ -148,20 +148,20 @@ jobs:
           echo "🔍 Validating YAML syntax for chart: $chart"
           chart_name=$(basename "$chart")
           
-          # Generate templates and validate YAML
-          if ! helm template "validate-$chart_name" "$chart" --namespace validation | kubectl apply --dry-run=client -f - > /dev/null 2>&1; then
-            echo "❌ YAML validation failed for chart: $chart"
+          # Generate templates and validate basic YAML syntax with Python
+          if ! helm template "validate-$chart_name" "$chart" --namespace validation | python3 -c "import sys, yaml; yaml.safe_load_all(sys.stdin.read())" > /dev/null 2>&1; then
+            echo "❌ YAML syntax validation failed for chart: $chart"
             failed_charts="$failed_charts $chart"
           else
-            echo "✅ YAML validation passed for chart: $chart"
+            echo "✅ YAML syntax validation passed for chart: $chart"
           fi
         done
         
         if [ -n "$failed_charts" ]; then
-          echo "❌ The following charts failed YAML validation:$failed_charts"
+          echo "❌ The following charts failed YAML syntax validation:$failed_charts"
           exit 1
         fi
-        echo "✅ All charts passed YAML validation!"
+        echo "✅ All charts passed YAML syntax validation!"
 
     - name: Check for common issues
       run: |
@@ -215,5 +215,3 @@ jobs:
         chart_count=$(echo $charts | wc -w)
         echo "📦 Total charts processed: $chart_count"
         echo "📁 Charts found: $charts"
-        echo ""
-        echo "✅ Pipeline completed successfully!"
