@@ -61,7 +61,8 @@ function createReleaseConfig(chartName, repositoryUrl) {
     
     ["@semantic-release/exec", {
       "verifyConditionsCmd": "echo Verifying ${dollar}{process.env.npm_package_name}",
-      "prepareCmd": "echo Preparing ${dollar}{process.env.npm_package_name} ${dollar}{nextRelease.version} && (sed --version >/dev/null 2>&1 && sed -i 's/^version:.*/version: ${dollar}{nextRelease.version}/' Chart.yaml || sed -i '' 's/^version:.*/version: ${dollar}{nextRelease.version}/' Chart.yaml)"
+      "prepareCmd": "echo Preparing ${dollar}{process.env.npm_package_name} ${dollar}{nextRelease.version} && (sed --version >/dev/null 2>&1 && sed -i 's/^version:.*/version: ${dollar}{nextRelease.version}/' Chart.yaml || sed -i '' 's/^version:.*/version: ${dollar}{nextRelease.version}/' Chart.yaml)",
+      "publishCmd": "helm package . --destination ../packages/ && helm push ../packages/${dollar}{process.env.npm_package_name}-${dollar}{nextRelease.version}.tgz oci://ghcr.io/${dollar}{process.env.GITHUB_REPOSITORY_OWNER || 'b1e90ff'}"
     }],
     
     ["@semantic-release/github", {

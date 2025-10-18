@@ -101,28 +101,11 @@ jobs:
       - name: Release chart
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HELM_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
         run: |
+          mkdir -p packages
           cd ${{ matrix.chart }}
-          npx semantic-release -e semantic-release-monorepo
-
-      - name: Package and push Helm chart to OCI registry
-        if: ${{ success() && !cancelled() }}
-        run: |
-          # Login to GitHub Container Registry
+          # Login to registry before semantic-release
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
-          
-          # Get the new version from Chart.yaml after semantic-release
-          CHART_VERSION=$(grep '^version:' ${{ matrix.chart }}/Chart.yaml | cut -d' ' -f2)
-          CHART_NAME=${{ matrix.chart }}
-          
-          echo "📦 Processing $CHART_NAME version $CHART_VERSION"
-          
-          # Package and push in one go - helm handles duplicates gracefully
-          helm package ${{ matrix.chart }}/ --destination ./packages/
-          
-          # Push with built-in duplicate handling
-          if helm push "./packages/${CHART_NAME}-${CHART_VERSION}.tgz" oci://ghcr.io/${{ github.repository_owner }} 2>/dev/null; then
-            echo "✅ Successfully pushed $CHART_NAME:$CHART_VERSION"
-          else
-            echo "ℹ️  $CHART_NAME:$CHART_VERSION already exists or no new version created"
-          fi
+          npx semantic-release -e semantic-release-monorepo
