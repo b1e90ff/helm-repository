@@ -1,0 +1,12 @@
+enableIstioInjection: true
+
+istio:
+  injection: enabled
+
+serviceAccount:
+  create: true
+  name: istio-sidecar-configurator
+
+image:
+  repository: bitnami/kubectl
+  tag: "1.31"

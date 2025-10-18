@@ -1,0 +1,12 @@
+externalGateway:
+  enabled: true
+  name: external-gateway
+  className: istio
+  http:
+    port: 80
+    hostname: "*.tat.systems"
+    allowedRoutes:
+      namespaces: 
+        - portfolio
+  service:
+    nodePort: 30080

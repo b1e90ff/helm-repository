@@ -1,0 +1,30 @@
+{{- if .Values.enableIstioInjection }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "istio-sidecar-configurator.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "istio-sidecar-configurator.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "istio-sidecar-configurator.serviceAccountName" . }}
+      containers:
+        - name: kubectl
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          command:
+            - kubectl
+            - label
+            - namespace
+            - {{ .Release.Namespace }}
+            - istio-injection={{ .Values.istio.injection }}
+            - --overwrite
+{{- end }}

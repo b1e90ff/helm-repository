@@ -1,0 +1,23 @@
+{{- if .Values.externalGateway.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.externalGateway.name }}-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.externalGateway.name }}
+    istio: gateway
+spec:
+  type: NodePort
+  selector:
+    istio: gateway
+    app: {{ .Values.externalGateway.name }}
+  ports:
+  - name: http
+    port: {{ .Values.externalGateway.http.port }}
+    targetPort: {{ .Values.externalGateway.http.port }}
+    {{- if .Values.externalGateway.service.nodePort }}
+    nodePort: {{ .Values.externalGateway.service.nodePort }}
+    {{- end }}
+    protocol: TCP
+{{- end }}
