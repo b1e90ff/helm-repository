@@ -47,7 +47,10 @@ function createReleaseConfig(chartName, repositoryUrl) {
         { "type": "revert", "release": "patch" },
         { "type": "chore", "release": "patch" },
         { "type": "refactor", "release": "patch" }
-      ]
+      ],
+      "parserOpts": {
+        "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES"]
+      }
     }],
     
     "@semantic-release/release-notes-generator",
@@ -63,7 +66,7 @@ function createReleaseConfig(chartName, repositoryUrl) {
     }],
     
     ["@semantic-release/git", {
-      "assets": ["Chart.yaml", "package.json"],
+      "assets": ["Chart.yaml"],
       "message": "chore(release): ${dollar}{process.env.npm_package_name}@${dollar}{nextRelease.version} [skip ci]\\n\\n${dollar}{nextRelease.notes}"
     }]
   ]
@@ -94,7 +97,9 @@ async function releaseChart(chartPath, dryRun = false) {
   
   try {
     process.chdir(chartPath);
-    const command = dryRun ? 'npx semantic-release --dry-run' : 'npx semantic-release';
+    const command = dryRun ? 
+      'npx semantic-release -e semantic-release-monorepo --dry-run' : 
+      'npx semantic-release -e semantic-release-monorepo';
     execSync(command, { stdio: 'inherit' });
     console.log(`✅ ${dryRun ? 'DRY RUN: ' : ''}Released ${chartName}`);
   } catch (error) {
@@ -107,10 +112,18 @@ async function releaseChart(chartPath, dryRun = false) {
 
 async function main() {
   const command = process.argv[2];
+  const chartName = process.argv[3]; // For setup-single command
   const dryRun = process.argv.includes('--dry-run');
   const repositoryUrl = process.env.GITHUB_REPOSITORY 
     ? `https://github.com/${process.env.GITHUB_REPOSITORY}.git`
     : 'https://github.com/b1e90ff/helm-repository.git';
+  
+  if (command === 'setup-single' && chartName) {
+    console.log(`🛠️  Setting up single chart: ${chartName}`);
+    await setupChart(chartName, repositoryUrl);
+    console.log('🎉 Setup complete!');
+    return;
+  }
   
   console.log('🔍 Finding Helm charts...');
   const charts = await findCharts();
@@ -133,7 +146,7 @@ async function main() {
       await releaseChart(chart, dryRun);
     }
   } else {
-    console.log('Usage: node release.js [setup|release] [--dry-run]');
+    console.log('Usage: node release.js [setup|setup-single CHART|release] [--dry-run]');
     process.exit(1);
   }
   

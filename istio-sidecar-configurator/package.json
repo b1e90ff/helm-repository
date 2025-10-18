@@ -1,9 +1,0 @@
-{
-  "name": "istio-sidecar-configurator",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Helm chart for istio-sidecar-configurator",
-  "scripts": {
-    "semantic-release": "semantic-release"
-  }
-}

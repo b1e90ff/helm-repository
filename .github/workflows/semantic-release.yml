@@ -13,12 +13,14 @@ permissions:
   issues: write
   pull-requests: write
   packages: write
+  id-token: write
 
 jobs:
-  release:
-    name: Release
+  setup:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      charts: ${{ steps.find.outputs.charts }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -31,20 +33,96 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install dependencies
+        run: npm install
+
+      - name: Find and setup charts
+        id: find
+        run: |
+          # Setup all charts
+          npm run setup
+          
+          # Find charts for matrix
+          charts=$(find . -maxdepth 2 -name "Chart.yaml" -not -path "./.git/*" | xargs -n1 dirname | sed 's|^./||' | jq -R -s -c 'split("\n")[:-1]')
+          echo "charts=$charts" >> $GITHUB_OUTPUT
+
+      - name: Cache setup artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            */package.json
+            */release.config.js
+            node_modules
+          key: setup-${{ github.sha }}
+
+  release:
+    name: Release ${{ matrix.chart }}
+    runs-on: ubuntu-latest
+    needs: setup
+    if: ${{ needs.setup.outputs.charts != '[]' }}
+    strategy:
+      matrix:
+        chart: ${{ fromJson(needs.setup.outputs.charts) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4.3.1
+        with:
+          version: '3.14.0'
+
+      - name: Restore setup artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            */package.json
+            */release.config.js
+            node_modules
+          key: setup-${{ github.sha }}
+
       - name: Git Config
         run: |
           git config --global --add safe.directory $(pwd)
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-      - name: Install dependencies
-        run: npm install
+      - name: Create packages directory
+        run: mkdir -p packages
 
-      - name: Setup charts for release
-        run: npm run setup
-
-      - name: Release charts
+      - name: Release chart
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run release
+        run: |
+          cd ${{ matrix.chart }}
+          npx semantic-release -e semantic-release-monorepo
+
+      - name: Package and push Helm chart to OCI registry
+        if: ${{ success() && !cancelled() }}
+        run: |
+          # Login to GitHub Container Registry
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          # Get the new version from Chart.yaml after semantic-release
+          CHART_VERSION=$(grep '^version:' ${{ matrix.chart }}/Chart.yaml | cut -d' ' -f2)
+          CHART_NAME=${{ matrix.chart }}
+          
+          echo "📦 Processing $CHART_NAME version $CHART_VERSION"
+          
+          # Package and push in one go - helm handles duplicates gracefully
+          helm package ${{ matrix.chart }}/ --destination ./packages/
+          
+          # Push with built-in duplicate handling
+          if helm push "./packages/${CHART_NAME}-${CHART_VERSION}.tgz" oci://ghcr.io/${{ github.repository_owner }}/helm-charts 2>/dev/null; then
+            echo "✅ Successfully pushed $CHART_NAME:$CHART_VERSION"
+          else
+            echo "ℹ️  $CHART_NAME:$CHART_VERSION already exists or no new version created"
+          fi

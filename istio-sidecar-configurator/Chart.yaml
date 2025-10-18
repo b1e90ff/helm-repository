@@ -3,4 +3,3 @@ name: istio-sidecar-configurator
 description: A Helm chart to configure Istio sidecar injection for namespaces
 type: application
 version: 1.0.0
-appVersion: "1.0.0"
