@@ -54,7 +54,7 @@ function createReleaseConfig(chartName, repositoryUrl) {
     
     ["@semantic-release/exec", {
       "verifyConditionsCmd": "echo Verifying ${dollar}{process.env.npm_package_name}",
-      "prepareCmd": "echo Preparing ${dollar}{process.env.npm_package_name} ${dollar}{nextRelease.version} && sed -i '' 's/^version:.*/version: ${dollar}{nextRelease.version}/' Chart.yaml"
+      "prepareCmd": "echo Preparing ${dollar}{process.env.npm_package_name} ${dollar}{nextRelease.version} && (sed --version >/dev/null 2>&1 && sed -i 's/^version:.*/version: ${dollar}{nextRelease.version}/' Chart.yaml || sed -i '' 's/^version:.*/version: ${dollar}{nextRelease.version}/' Chart.yaml)"
     }],
     
     ["@semantic-release/github", {
