@@ -1,0 +1,21 @@
+{
+  "name": "helm-repository-release",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Semantic release for Helm charts",
+  "scripts": {
+    "setup": "node .github/scripts/release.js setup",
+    "release": "node .github/scripts/release.js release",
+    "release:dry-run": "node .github/scripts/release.js release --dry-run"
+  },
+  "devDependencies": {
+    "semantic-release": "^22.0.0",
+    "@semantic-release/commit-analyzer": "^11.0.0",
+    "@semantic-release/release-notes-generator": "^12.0.0",
+    "@semantic-release/git": "^10.0.0",
+    "@semantic-release/github": "^9.0.0",
+    "@semantic-release/exec": "^6.0.0",
+    "conventional-changelog-conventionalcommits": "^7.0.0"
+  }
+}
