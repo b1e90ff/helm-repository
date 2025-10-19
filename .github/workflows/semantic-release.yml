@@ -80,6 +80,9 @@ jobs:
         with:
           version: '3.14.0'
 
+      - name: Helm registry login
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+        
       - name: Restore setup artifacts
         uses: actions/cache@v4
         with:
