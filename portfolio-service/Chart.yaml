@@ -1,0 +1,12 @@
+apiVersion: v2
+name: portfolio-service
+description: Portfolio Web Service
+type: application
+version: 1.0.0
+dependencies:
+  - name: web-service
+   version: ">=1.0.0"
+   repository: "oci://ghcr.io/b1e90ff/web-service"
+  - name: istio-sidecar-configurator
+   version: ">=1.0.0"
+   repository: "oci://ghcr.io/b1e90ff/istio-sidecar-configurator"
