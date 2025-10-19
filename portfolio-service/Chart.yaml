@@ -6,7 +6,7 @@ version: 1.0.0
 dependencies:
   - name: web-service
     version: ">=1.0.0"
-    repository: "oci://ghcr.io/b1e90ff/web-service"
+    repository: "oci://ghcr.io/b1e90ff"
   - name: istio-sidecar-configurator
     version: ">=1.0.0"
-    repository: "oci://ghcr.io/b1e90ff/istio-sidecar-configurator"
+    repository: "oci://ghcr.io/b1e90ff"
