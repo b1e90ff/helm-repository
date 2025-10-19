@@ -17,8 +17,8 @@ Helm chart for Kubernetes Gateway API resources with Istio.
 | `externalGateway.enabled` | Enable the external gateway | `true` |
 | `externalGateway.name` | Gateway name | `external-gateway` |
 | `externalGateway.http.port` | HTTP port | `80` |
-| `externalGateway.http.hostname` | Hostname pattern for routing | `*.tat.systems` |
-| `externalGateway.http.allowedRoutes.namespaces` | Namespaces allowed to attach routes | `[portfolio]` |
+| `externalGateway.http.hostname` | Hostname pattern for routing | `*.example.com` |
+| `externalGateway.http.allowedRoutes.namespaces` | Namespaces allowed to attach routes | `[default]` |
 | `externalGateway.service.nodePort` | NodePort for external access | `30080` |
 
 ## HTTPRoute Integration
@@ -30,7 +30,7 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: app-route
-  namespace: portfolio
+  namespace: default
 spec:
   parentRefs:
   - name: external-gateway

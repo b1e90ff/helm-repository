@@ -4,9 +4,9 @@ externalGateway:
   className: istio
   http:
     port: 80
-    hostname: "*.tat.systems"
+    hostname: "*.example.com"
     allowedRoutes:
       namespaces: 
-        - portfolio
+        - default
   service:
     nodePort: 30080
