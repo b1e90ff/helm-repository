@@ -106,7 +106,7 @@ resources:
     memory: 256Mi
 ```
 
-### External Web Service
+### Web Service with External Access
 
 ```yaml
 # values.yaml
