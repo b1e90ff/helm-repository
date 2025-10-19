@@ -1,0 +1,6 @@
+apiVersion: v2
+name: external-web-service
+description: External web service deployment with Istio Gateway access
+type: application
+version: 0.0.0
+appVersion: "1.0.0"
