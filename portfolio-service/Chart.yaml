@@ -2,7 +2,7 @@ apiVersion: v2
 name: portfolio-service
 description: Portfolio Web Service
 type: application
-version: 1.0.0
+version: 1.0.1
 dependencies:
   - name: web-service
     version: ">=1.0.0"
