@@ -48,6 +48,12 @@ jobs:
       with:
         version: '3.14.0'
 
+    - name: Build Helm dependencies
+      run: |
+        echo "🔄 Building Helm dependencies for ${{ matrix.chart }}"
+        helm dependency build "${{ matrix.chart }}"
+        echo "✅ Dependencies built"
+
     - name: Lint Helm chart
       run: |
         echo "🔍 Linting chart: ${{ matrix.chart }}"
