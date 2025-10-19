@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "web-service.fullname" . }}
+  labels:
+    {{- include "web-service.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "web-service.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "web-service.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "web-service.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          {{- if .Values.healthCheck.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.liveness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.healthCheck.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.healthCheck.liveness.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.readiness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.healthCheck.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.healthCheck.readiness.periodSeconds }}
+          {{- end }}
+          {{- if or .Values.config.enabled .Values.secrets.enabled }}
+          env:
+            {{- if .Values.config.enabled }}
+            - name: CONFIG_MAP_NAME
+              value: {{ include "web-service.fullname" . }}
+            {{- end }}
+            {{- if .Values.secrets.enabled }}
+            - name: SECRET_NAME
+              value: {{ include "web-service.fullname" . }}
+            {{- end }}
+          {{- end }}
+          {{- if or .Values.config.enabled .Values.secrets.enabled }}
+          volumeMounts:
+            {{- if .Values.config.enabled }}
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            {{- end }}
+            {{- if .Values.secrets.enabled }}
+            - name: secret-volume
+              mountPath: /app/secrets
+              readOnly: true
+            {{- end }}
+            {{- if .Values.tmpfsVolumes.enabled }}
+            {{- range .Values.tmpfsVolumes.volumes }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- if or .Values.config.enabled .Values.secrets.enabled }}
+      volumes:
+        {{- if .Values.config.enabled }}
+        - name: config-volume
+          configMap:
+            name: {{ include "web-service.fullname" . }}
+        {{- end }}
+        {{- if .Values.secrets.enabled }}
+        - name: secret-volume
+          secret:
+            secretName: {{ include "web-service.fullname" . }}
+        {{- end }}
+        {{- if .Values.tmpfsVolumes.enabled }}
+        {{- range .Values.tmpfsVolumes.volumes }}
+        - name: {{ .name }}
+          emptyDir:
+            medium: Memory
+        {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

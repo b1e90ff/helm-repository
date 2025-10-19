@@ -1,0 +1,102 @@
+# Default values for web-service
+
+image:
+  repository: nginx
+  tag: "alpine"
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+imagePullSecrets: []
+# Example:
+# - name: github-registry-secret
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+config:
+  # Create ConfigMap for application configuration
+  enabled: false
+  data: {}
+  # Example:
+  # data:
+  #   app.properties: |
+  #     server.port=8080
+  #   config.json: |
+  #     {"key": "value"}
+
+secrets:
+  # Create Secret for sensitive data
+  enabled: false
+  data: {}
+  # Example:
+  # data:
+  #   DATABASE_PASSWORD: "secret-password"
+  #   API_KEY: "api-key-value"
+
+healthCheck:
+  enabled: true
+  liveness:
+    path: /
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  readiness:
+    path: /
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+# External routing configuration (optional)
+# When enabled, creates HTTPRoute for external access via Istio Gateway
+externalRouting:
+  enabled: false
+  hostname: example.com
+  gateway:
+    name: external-gateway
+    namespace: istio-system
+
+# Security context for pods
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+podSecurityContext:
+  fsGroup: 65534
+
+# Add tmpfs volume for read-only root filesystem compatibility
+tmpfsVolumes:
+  enabled: true
+  volumes:
+    - name: tmp
+      mountPath: /tmp
+    - name: var-cache
+      mountPath: /var/cache
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

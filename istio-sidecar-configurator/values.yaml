@@ -10,3 +10,8 @@ serviceAccount:
 image:
   repository: bitnami/kubectl
   tag: "1.31"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+# Example:
+# - name: github-registry-secret
