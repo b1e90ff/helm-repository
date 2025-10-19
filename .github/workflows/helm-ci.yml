@@ -25,12 +25,12 @@ jobs:
         echo "charts=$charts" >> $GITHUB_OUTPUT
         echo "Found charts: $charts"
         
-        # Create matrix for parallel processing - ensure proper JSON format
+        # Create matrix for parallel processing
         matrix_json=$(echo "$charts" | tr ' ' '\n' | grep -v '^$' | sed 's/^/"/;s/$/"/' | paste -sd, - | sed 's/^/[/;s/$/]/')
         echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
         echo "Matrix: $matrix_json"
 
-  helm-lint:
+  test-charts:
     runs-on: ubuntu-latest
     needs: find-charts
     if: needs.find-charts.outputs.matrix != '[]'
@@ -51,95 +51,16 @@ jobs:
     - name: Lint Helm chart
       run: |
         echo "🔍 Linting chart: ${{ matrix.chart }}"
-        if helm lint "${{ matrix.chart }}"; then
-          echo "✅ Linting passed for chart: ${{ matrix.chart }}"
-        else
+        if ! helm lint "${{ matrix.chart }}"; then
           echo "❌ Linting failed for chart: ${{ matrix.chart }}"
           exit 1
         fi
+        echo "✅ Linting passed for chart: ${{ matrix.chart }}"
 
-  helm-template:
-    runs-on: ubuntu-latest
-    needs: find-charts
-    if: needs.find-charts.outputs.matrix != '[]'
-    strategy:
-      fail-fast: false
-      matrix:
-        chart: ${{ fromJson(needs.find-charts.outputs.matrix) }}
-        namespace: ['test-namespace', 'production', 'default', 'monitoring']
-        release-name: ['test', 'short', 'very-long-release-name-that-might-cause-issues']
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v5
-
-    - name: Set up Helm
-      uses: azure/setup-helm@v4.3.1
-      with:
-        version: '3.14.0'
-
-    - name: Template Helm chart
-      run: |
-        chart_name=$(basename "${{ matrix.chart }}")
-        echo "🧪 Testing template rendering for chart: ${{ matrix.chart }}"
-        echo "📦 Release: ${{ matrix.release-name }}, Namespace: ${{ matrix.namespace }}"
-        
-        if helm template "${{ matrix.release-name }}" "${{ matrix.chart }}" --namespace "${{ matrix.namespace }}" > /dev/null; then
-          echo "✅ Template rendering passed"
-        else
-          echo "❌ Template rendering failed"
-          exit 1
-        fi
-
-  yaml-validation:
-    runs-on: ubuntu-latest
-    needs: find-charts
-    if: needs.find-charts.outputs.matrix != '[]'
-    strategy:
-      fail-fast: false
-      matrix:
-        chart: ${{ fromJson(needs.find-charts.outputs.matrix) }}
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v5
-
-    - name: Set up Helm
-      uses: azure/setup-helm@v4.3.1
-      with:
-        version: '3.14.0'
-
-    - name: Validate YAML syntax
-      run: |
-        chart_name=$(basename "${{ matrix.chart }}")
-        echo "🔍 Validating YAML syntax for chart: ${{ matrix.chart }}"
-        
-        # Generate templates and validate basic YAML syntax with Python
-        if helm template "validate-$chart_name" "${{ matrix.chart }}" --namespace validation | python3 -c "import sys, yaml; yaml.safe_load_all(sys.stdin.read())" > /dev/null 2>&1; then
-          echo "✅ YAML syntax validation passed"
-        else
-          echo "❌ YAML syntax validation failed"
-          exit 1
-        fi
-
-  chart-validation:
-    runs-on: ubuntu-latest
-    needs: find-charts
-    if: needs.find-charts.outputs.matrix != '[]'
-    strategy:
-      fail-fast: false
-      matrix:
-        chart: ${{ fromJson(needs.find-charts.outputs.matrix) }}
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v5
-
-    - name: Check Chart.yaml requirements
+    - name: Validate Chart.yaml
       run: |
         echo "🔍 Validating Chart.yaml for: ${{ matrix.chart }}"
         
-        # Check if Chart.yaml has required fields
         if ! grep -q "^name:" "${{ matrix.chart }}/Chart.yaml"; then
           echo "❌ Error: Chart.yaml missing 'name' field"
           exit 1
@@ -150,51 +71,67 @@ jobs:
           exit 1
         fi
         
-        # Check for proper version format
         version=$(grep "^version:" "${{ matrix.chart }}/Chart.yaml" | cut -d' ' -f2 | tr -d '"')
         if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           echo "❌ Error: Invalid version format: $version (must be semver like 1.0.0)"
           exit 1
         fi
         
-        # Check if templates directory exists and has content
-        if [ ! -d "${{ matrix.chart }}/templates" ] || [ -z "$(ls -A "${{ matrix.chart }}/templates" 2>/dev/null)" ]; then
-          echo "⚠️  Warning: Empty or missing templates directory"
+        echo "✅ Chart.yaml validation passed"
+
+    - name: Template rendering tests
+      run: |
+        chart_name=$(basename "${{ matrix.chart }}")
+        echo "🧪 Testing template rendering for chart: ${{ matrix.chart }}"
+        
+        # Test default values
+        if ! helm template "test-$chart_name" "${{ matrix.chart }}" --namespace test > /dev/null; then
+          echo "❌ Template rendering failed with default values"
+          exit 1
         fi
         
-        echo "✅ Chart validation passed"
+        # Test different namespaces and release names
+        for ns in "default" "production" "monitoring"; do
+          if ! helm template "test-$chart_name" "${{ matrix.chart }}" --namespace "$ns" > /dev/null; then
+            echo "❌ Template rendering failed with namespace '$ns'"
+            exit 1
+          fi
+        done
+        
+        for release in "short" "very-long-release-name-that-might-cause-issues"; do
+          if ! helm template "$release" "${{ matrix.chart }}" --namespace test > /dev/null; then
+            echo "❌ Template rendering failed with release name '$release'"
+            exit 1
+          fi
+        done
+        
+        echo "✅ Template rendering tests passed"
 
-  conditional-tests:
-    runs-on: ubuntu-latest
-    needs: find-charts
-    if: needs.find-charts.outputs.matrix != '[]'
-    strategy:
-      fail-fast: false
-      matrix:
-        chart: ${{ fromJson(needs.find-charts.outputs.matrix) }}
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v5
+    - name: YAML validation
+      run: |
+        chart_name=$(basename "${{ matrix.chart }}")
+        echo "🔍 Validating YAML syntax for chart: ${{ matrix.chart }}"
+        
+        if ! helm template "validate-$chart_name" "${{ matrix.chart }}" --namespace validation | python3 -c "import sys, yaml; yaml.safe_load_all(sys.stdin.read())" > /dev/null 2>&1; then
+          echo "❌ YAML syntax validation failed"
+          exit 1
+        fi
+        
+        echo "✅ YAML syntax validation passed"
 
-    - name: Set up Helm
-      uses: azure/setup-helm@v4.3.1
-      with:
-        version: '3.14.0'
-
-    - name: Test conditional features
+    - name: Conditional features tests
       run: |
         chart_name=$(basename "${{ matrix.chart }}")
         echo "🧪 Testing conditional features for: ${{ matrix.chart }}"
         
-        # Test default values
+        # Test default values produce output
         default_output=$(helm template "test-$chart_name" "${{ matrix.chart }}" --namespace test)
         if [ -z "$default_output" ]; then
           echo "❌ Chart produces no output with default values"
           exit 1
         fi
         
-        # Test specific conditional features based on chart content
+        # Test conditional features if they exist
         if grep -q "externalRouting" "${{ matrix.chart }}/values.yaml" 2>/dev/null; then
           echo "Testing externalRouting feature..."
           if ! helm template "test-external" "${{ matrix.chart }}" --set externalRouting.enabled=true --namespace test > /dev/null; then
@@ -227,29 +164,11 @@ jobs:
           fi
         fi
         
-        echo "✅ Conditional features test passed"
+        echo "✅ Conditional features tests passed"
 
-  security-check:
-    runs-on: ubuntu-latest
-    needs: find-charts
-    if: needs.find-charts.outputs.matrix != '[]'
-    strategy:
-      fail-fast: false
-      matrix:
-        chart: ${{ fromJson(needs.find-charts.outputs.matrix) }}
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v5
-
-    - name: Set up Helm
-      uses: azure/setup-helm@v4.3.1
-      with:
-        version: '3.14.0'
-
-    - name: Security best practices check
+    - name: Security check
       run: |
-        echo "� Checking security best practices for: ${{ matrix.chart }}"
+        echo "🔒 Checking security best practices for: ${{ matrix.chart }}"
         
         # Check for hardcoded namespaces
         namespace_issues=$(grep -r "namespace:" "${{ matrix.chart }}" --include="*.yaml" | grep -v "{{ .Release.Namespace }}" | grep -v "{{ .Values.*namespace" | grep -v "# " || true)
