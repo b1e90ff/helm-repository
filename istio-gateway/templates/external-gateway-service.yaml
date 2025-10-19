@@ -8,7 +8,7 @@ metadata:
     app: {{ .Values.externalGateway.name }}
     istio: gateway
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     istio: gateway
     app: {{ .Values.externalGateway.name }}
