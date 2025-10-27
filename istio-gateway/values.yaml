@@ -8,5 +8,4 @@ externalGateway:
     allowedRoutes:
       namespaces: 
         - default
-  service:
-    nodePort: 30080
+  service: {}

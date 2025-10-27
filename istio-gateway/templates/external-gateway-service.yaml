@@ -7,7 +7,7 @@ metadata:
   labels:
     app: {{ .Values.externalGateway.name }}
     istio: gateway
-  type: NodePort
+  type: LoadBalancer
   selector:
     istio: gateway
     app: {{ .Values.externalGateway.name }}
@@ -15,8 +15,5 @@ metadata:
   - name: http
     port: {{ .Values.externalGateway.http.port }}
     targetPort: {{ .Values.externalGateway.http.port }}
-    {{- if .Values.externalGateway.service.nodePort }}
-    nodePort: {{ .Values.externalGateway.service.nodePort }}
-    {{- end }}
     protocol: TCP
 {{- end }}
