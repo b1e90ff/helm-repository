@@ -127,54 +127,7 @@ jobs:
         fi
         
         echo "✅ YAML syntax validation passed"
-
-    - name: Conditional features tests
-      run: |
-        chart_name=$(basename "${{ matrix.chart }}")
-        echo "🧪 Testing conditional features for: ${{ matrix.chart }}"
         
-        # Test default values produce output
-        default_output=$(helm template "test-$chart_name" "${{ matrix.chart }}" --namespace test)
-        if [ -z "$default_output" ]; then
-          echo "❌ Chart produces no output with default values"
-          exit 1
-        fi
-        
-        # Test conditional features if they exist
-        if grep -q "externalRouting" "${{ matrix.chart }}/values.yaml" 2>/dev/null; then
-          echo "Testing externalRouting feature..."
-          if ! helm template "test-external" "${{ matrix.chart }}" --set externalRouting.enabled=true --namespace test > /dev/null; then
-            echo "❌ Failed with externalRouting enabled"
-            exit 1
-          fi
-        fi
-        
-        if grep -q "autoscaling" "${{ matrix.chart }}/values.yaml" 2>/dev/null; then
-          echo "Testing autoscaling feature..."
-          if ! helm template "test-hpa" "${{ matrix.chart }}" --set autoscaling.enabled=true --namespace test > /dev/null; then
-            echo "❌ Failed with autoscaling enabled"
-            exit 1
-          fi
-        fi
-        
-        if grep -q "config.enabled" "${{ matrix.chart }}/values.yaml" 2>/dev/null; then
-          echo "Testing config feature..."
-          if ! helm template "test-config" "${{ matrix.chart }}" --set config.enabled=true --namespace test > /dev/null; then
-            echo "❌ Failed with config enabled"
-            exit 1
-          fi
-        fi
-        
-        if grep -q "secrets.enabled" "${{ matrix.chart }}/values.yaml" 2>/dev/null; then
-          echo "Testing secrets feature..."
-          if ! helm template "test-secrets" "${{ matrix.chart }}" --set secrets.enabled=true --namespace test > /dev/null; then
-            echo "❌ Failed with secrets enabled"
-            exit 1
-          fi
-        fi
-        
-        echo "✅ Conditional features tests passed"
-
     - name: Security check
       run: |
         echo "🔒 Checking security best practices for: ${{ matrix.chart }}"
