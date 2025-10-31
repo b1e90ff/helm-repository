@@ -1,11 +1,4 @@
 externalGateway:
-  enabled: true
+  enabled: false
   name: external-gateway
   className: istio
-  http:
-    port: 80
-    hostname: "*.example.com"
-    allowedRoutes:
-      namespaces: 
-        - default
-  service: {}
