@@ -7,13 +7,19 @@ metadata:
   labels:
     app: {{ .Values.externalGateway.name }}
     istio: gateway
+spec:
   type: LoadBalancer
+  ipFamilyPolicy: SingleStack
+  ipFamilies:
+    - IPv4
   selector:
     istio: gateway
     app: {{ .Values.externalGateway.name }}
   ports:
-  - name: http
-    port: {{ .Values.externalGateway.http.port }}
-    targetPort: {{ .Values.externalGateway.http.port }}
-    protocol: TCP
+    {{- range .Values.externalGateway.service.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      protocol: {{ .protocol }}
+    {{- end }}
 {{- end }}
