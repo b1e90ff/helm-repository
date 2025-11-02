@@ -2,4 +2,4 @@ apiVersion: v2
 name: istio-gateway
 description: Minimal Helm Chart for Istio Gateway integration. No custom Gateway or Service resources are created; Istio manages all required objects automatically.
 type: application
-version: 1.5.0
+version: 1.5.1
