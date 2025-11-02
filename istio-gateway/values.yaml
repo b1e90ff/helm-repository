@@ -1,4 +1,1 @@
-externalGateway:
-  enabled: false
-  name: external-gateway
-  className: istio
+{}

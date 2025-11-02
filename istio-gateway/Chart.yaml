@@ -1,5 +1,5 @@
 apiVersion: v2
 name: istio-gateway
-description: Istio Gateway Helm Chart for Kubernetes Gateway API
+description: Minimal Helm Chart for Istio Gateway integration. No custom Gateway or Service resources are created; Istio manages all required objects automatically.
 type: application
-version: 1.4.0
+version: 1.3.0
