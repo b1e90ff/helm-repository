@@ -1,0 +1,9 @@
+apiVersion: v2
+name: istiod
+description: Wrapper chart for Istio control plane (istiod) with environment-specific configuration
+type: application
+version: 1.26.2
+dependencies:
+  - name: istiod
+    version: "1.26.2"
+    repository: "https://istio-release.storage.googleapis.com/charts"

@@ -1,0 +1,6 @@
+istiod:
+  pilot:
+    replicaCount: 2
+    autoscaleEnabled: true
+    autoscaleMin: 2
+    autoscaleMax: 5
