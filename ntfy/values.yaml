@@ -1,0 +1,78 @@
+image:
+  repository: binwiederhier/ntfy
+  tag: v2.11.0
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 80
+
+externalRouting:
+  enabled: false
+  hostname: ""
+  gateway:
+    name: istio-gateway
+    namespace: istio-gateway
+
+server:
+  baseUrl: ""
+  behindProxy: true
+  cacheDuration: "24h"
+
+  # iOS instant push — forwards poll requests to ntfy.sh (no message content leaves your server)
+  upstreamBaseUrl: "https://ntfy.sh"
+
+  # Auth
+  authDefaultAccess: "deny-all"
+  enableSignup: false
+  enableLogin: false
+
+  # Users: "name:bcrypt-hash:role"
+  authUsers: []
+
+  # ACL: "user:topic-pattern:permission" (ro/wo/rw)
+  authAccess: []
+
+  # Rate limiting
+  visitorSubscriptionLimit: 30
+  visitorRequestLimitBurst: 60
+  visitorRequestLimitReplenish: "5s"
+  visitorMessageDailyLimit: 500
+
+  # Message limits
+  messageSizeLimit: "4k"
+  messageDelayLimit: "3d"
+
+  # Attachments
+  attachmentFileSizeLimit: "15M"
+  attachmentTotalSizeLimit: "1G"
+  attachmentExpiryDuration: "3h"
+
+  # Keepalive
+  keepaliveInterval: "45s"
+
+  # Logging
+  logLevel: "info"
+  logFormat: "json"
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+podSecurityContext:
+  fsGroup: 65534

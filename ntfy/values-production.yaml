@@ -1,0 +1,17 @@
+server:
+  baseUrl: "https://ping.tat.systems"
+
+  authUsers:
+    - "cluster:$2y$10$4yf.4YWpKgnaLukg00QomOY/uOlHYbgPxu57/20y5ieethFImmb9G:user"
+    - "mobile:$2y$10$Vs.nURy8gBWXLZojGQa0hex/Z4d7l5XXmXAFiBbhmKQSFRRMyDzrC:user"
+
+  authAccess:
+    - "cluster:*:wo"
+    - "mobile:*:ro"
+
+externalRouting:
+  enabled: true
+  hostname: "ping.tat.systems"
+  gateway:
+    name: istio-gateway
+    namespace: istio-gateway

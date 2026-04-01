@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ntfy.fullname" . }}
+  labels:
+{{ include "ntfy.labels" . | indent 4 }}
+data:
+  server.yml: |
+    base-url: {{ .Values.server.baseUrl | quote }}
+    listen-http: ":8080"
+    behind-proxy: {{ .Values.server.behindProxy }}
+
+    # iOS instant push
+    upstream-base-url: {{ .Values.server.upstreamBaseUrl | quote }}
+
+    # Cache
+    cache-file: "/var/cache/ntfy/cache.db"
+    cache-duration: {{ .Values.server.cacheDuration | quote }}
+    cache-startup-queries: |
+      pragma journal_mode = WAL;
+      pragma synchronous = normal;
+      pragma temp_store = memory;
+      pragma busy_timeout = 15000;
+
+    # Auth
+    auth-file: "/var/cache/ntfy/user.db"
+    auth-default-access: {{ .Values.server.authDefaultAccess | quote }}
+    enable-signup: {{ .Values.server.enableSignup }}
+    enable-login: {{ .Values.server.enableLogin }}
+
+    {{- if .Values.server.authUsers }}
+    auth-users:
+      {{- range .Values.server.authUsers }}
+      - {{ . | quote }}
+      {{- end }}
+    {{- end }}
+
+    {{- if .Values.server.authAccess }}
+    auth-access:
+      {{- range .Values.server.authAccess }}
+      - {{ . | quote }}
+      {{- end }}
+    {{- end }}
+
+    # Rate limiting
+    visitor-subscription-limit: {{ .Values.server.visitorSubscriptionLimit }}
+    visitor-request-limit-burst: {{ .Values.server.visitorRequestLimitBurst }}
+    visitor-request-limit-replenish: {{ .Values.server.visitorRequestLimitReplenish | quote }}
+    visitor-message-daily-limit: {{ .Values.server.visitorMessageDailyLimit }}
+
+    # Messages
+    message-size-limit: {{ .Values.server.messageSizeLimit | quote }}
+    message-delay-limit: {{ .Values.server.messageDelayLimit | quote }}
+
+    # Attachments
+    attachment-cache-dir: "/var/cache/ntfy/attachments"
+    attachment-file-size-limit: {{ .Values.server.attachmentFileSizeLimit | quote }}
+    attachment-total-size-limit: {{ .Values.server.attachmentTotalSizeLimit | quote }}
+    attachment-expiry-duration: {{ .Values.server.attachmentExpiryDuration | quote }}
+
+    # Keepalive
+    keepalive-interval: {{ .Values.server.keepaliveInterval | quote }}
+
+    # Logging
+    log-level: {{ .Values.server.logLevel | quote }}
+    log-format: {{ .Values.server.logFormat | quote }}
