@@ -2,5 +2,5 @@ apiVersion: v2
 name: ntfy
 description: Self-hosted push notification service with iOS instant delivery
 type: application
-version: 1.0.0
+version: 1.0.1
 appVersion: "2.11.0"
