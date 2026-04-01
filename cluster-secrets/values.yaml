@@ -1,0 +1,17 @@
+sealedSecrets: []
+# - name: my-secret
+#   namespace: my-namespace          # Namespace is auto-created before secrets are applied
+#   type: Opaque
+#   encryptedData:
+#     key: AgEncryptedValue...
+#
+#   # Deploy to multiple namespaces (requires scope: cluster-wide)
+#   # namespaces: [ns-a, ns-b]
+#   # scope: cluster-wide
+
+serviceAccount:
+  name: cluster-secrets-ns-creator
+
+image:
+  repository: bitnami/kubectl
+  tag: latest

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: cluster-secrets
+description: Manages namespaces and sealed secrets for a cluster
+type: application
+version: 1.0.0
