@@ -27,20 +27,7 @@ data:
     auth-default-access: {{ .Values.server.authDefaultAccess | quote }}
     enable-signup: {{ .Values.server.enableSignup }}
     enable-login: {{ .Values.server.enableLogin }}
-
-    {{- if .Values.server.authUsers }}
-    auth-users:
-      {{- range .Values.server.authUsers }}
-      - {{ . | quote }}
-      {{- end }}
-    {{- end }}
-
-    {{- if .Values.server.authAccess }}
-    auth-access:
-      {{- range .Values.server.authAccess }}
-      - {{ . | quote }}
-      {{- end }}
-    {{- end }}
+    web-root: {{ .Values.server.webRoot | default "/" | quote }}
 
     # Rate limiting
     visitor-subscription-limit: {{ .Values.server.visitorSubscriptionLimit }}

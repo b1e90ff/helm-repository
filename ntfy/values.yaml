@@ -1,6 +1,6 @@
 image:
   repository: binwiederhier/ntfy
-  tag: v2.11.0
+  tag: v2.21.0
   pullPolicy: IfNotPresent
 
 replicaCount: 1
@@ -29,11 +29,8 @@ server:
   enableSignup: false
   enableLogin: false
 
-  # Users: "name:bcrypt-hash:role"
-  authUsers: []
-
-  # ACL: "user:topic-pattern:permission" (ro/wo/rw)
-  authAccess: []
+  # Web UI (disable to hide dashboard from public)
+  webRoot: "disable"
 
   # Rate limiting
   visitorSubscriptionLimit: 30
@@ -56,6 +53,14 @@ server:
   # Logging
   logLevel: "info"
   logFormat: "json"
+
+# Name of the Kubernetes Secret containing user passwords
+credentialsSecret: ""
+
+# Users provisioned on every pod start via init container
+# Passwords are read from the credentialsSecret using passwordKey
+# Format: { name, passwordKey, role (user|admin), access: [{ topic, permission (ro|wo|rw) }] }
+users: []
 
 resources:
   limits:

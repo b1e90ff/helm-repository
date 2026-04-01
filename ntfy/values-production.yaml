@@ -1,13 +1,21 @@
 server:
   baseUrl: "https://ping.tat.systems"
 
-  authUsers:
-    - "cluster:$2y$10$4yf.4YWpKgnaLukg00QomOY/uOlHYbgPxu57/20y5ieethFImmb9G:user"
-    - "mobile:$2y$10$Vs.nURy8gBWXLZojGQa0hex/Z4d7l5XXmXAFiBbhmKQSFRRMyDzrC:user"
+credentialsSecret: ntfy-credentials
 
-  authAccess:
-    - "cluster:*:wo"
-    - "mobile:*:ro"
+users:
+  - name: cluster
+    passwordKey: cluster-password
+    role: user
+    access:
+      - topic: "*"
+        permission: wo
+  - name: mobile
+    passwordKey: mobile-password
+    role: user
+    access:
+      - topic: "*"
+        permission: ro
 
 externalRouting:
   enabled: true

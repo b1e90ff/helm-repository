@@ -18,6 +18,37 @@ spec:
     spec:
       securityContext:
 {{ toYaml .Values.podSecurityContext | indent 8 }}
+      {{- if and .Values.users .Values.credentialsSecret }}
+      initContainers:
+        - name: setup-users
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -e
+              {{- range .Values.users }}
+              {{- $userName := .name }}
+              NTFY_PASSWORD="${{ .passwordKey | upper | replace "-" "_" }}" ntfy user add {{ if eq .role "admin" }}--role=admin {{ end }}{{ .name }} 2>/dev/null || \
+              NTFY_PASSWORD="${{ .passwordKey | upper | replace "-" "_" }}" ntfy user change-pass {{ .name }}
+              {{- range .access }}
+              ntfy access {{ $userName }} {{ .topic | quote }} {{ .permission }}
+              {{- end }}
+              {{- end }}
+          env:
+            {{- range .Values.users }}
+            - name: {{ .passwordKey | upper | replace "-" "_" }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.credentialsSecret }}
+                  key: {{ .passwordKey }}
+            {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/ntfy
+              readOnly: true
+            - name: cache
+              mountPath: /var/cache/ntfy
+      {{- end }}
       containers:
         - name: ntfy
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}

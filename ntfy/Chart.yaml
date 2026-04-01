@@ -3,4 +3,4 @@ name: ntfy
 description: Self-hosted push notification service with iOS instant delivery
 type: application
 version: 1.0.1
-appVersion: "2.11.0"
+appVersion: "2.21.0"
