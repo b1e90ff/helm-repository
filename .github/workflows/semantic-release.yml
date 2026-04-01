@@ -61,6 +61,7 @@ jobs:
     needs: setup
     if: ${{ needs.setup.outputs.charts != '[]' }}
     strategy:
+      max-parallel: 1
       matrix:
         chart: ${{ fromJson(needs.setup.outputs.charts) }}
     steps:
@@ -97,6 +98,9 @@ jobs:
           git config --global --add safe.directory $(pwd)
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+
+      - name: Pull latest changes
+        run: git pull --rebase origin main
 
       - name: Create packages directory
         run: mkdir -p packages
