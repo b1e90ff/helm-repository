@@ -24,6 +24,10 @@ server:
   # iOS instant push — forwards poll requests to ntfy.sh (no message content leaves your server)
   upstreamBaseUrl: "https://ntfy.sh"
 
+  # PostgreSQL connection (replaces SQLite for cache + auth)
+  # Format: postgres://user:password@host:port/dbname?sslmode=disable
+  databaseUrl: ""
+
   # Auth
   authDefaultAccess: "deny-all"
   enableSignup: false
@@ -54,13 +58,9 @@ server:
   logLevel: "info"
   logFormat: "json"
 
-# Name of the Kubernetes Secret containing user passwords
-credentialsSecret: ""
-
-# Users provisioned on every pod start via init container
-# Passwords are read from the credentialsSecret using passwordKey
-# Format: { name, passwordKey, role (user|admin), access: [{ topic, permission (ro|wo|rw) }] }
-users: []
+# Kubernetes Secret containing the database URL (key: database-url)
+# Use this instead of server.databaseUrl to keep credentials out of values
+databaseSecret: ""
 
 resources:
   limits:

@@ -1,0 +1,31 @@
+{{- $serviceName := .Values.service.name | required ".Values.service.name is required" }}
+{{- $servicePort := .Values.service.port | required ".Values.service.port is required" }}
+{{- $ip := .Values.postgres.ip | required ".Values.postgres.ip is required" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $serviceName }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  clusterIP: None
+  ports:
+    - name: tcp-postgres
+      protocol: TCP
+      port: {{ $servicePort }}
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: {{ $serviceName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    kubernetes.io/service-name: {{ $serviceName }}
+addressType: IPv4
+ports:
+  - name: tcp
+    port: {{ $servicePort }}
+    protocol: TCP
+endpoints:
+  - addresses:
+      - {{ $ip | quote }}
+    hostname: {{ $serviceName }}

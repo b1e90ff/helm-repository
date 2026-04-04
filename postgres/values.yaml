@@ -1,0 +1,6 @@
+service:
+  name: postgres
+  port: 5432
+
+postgres:
+  ip: ""

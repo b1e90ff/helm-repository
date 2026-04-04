@@ -14,16 +14,13 @@ data:
     upstream-base-url: {{ .Values.server.upstreamBaseUrl | quote }}
 
     # Cache
-    cache-file: "/var/cache/ntfy/cache.db"
     cache-duration: {{ .Values.server.cacheDuration | quote }}
-    cache-startup-queries: |
-      pragma journal_mode = WAL;
-      pragma synchronous = normal;
-      pragma temp_store = memory;
-      pragma busy_timeout = 15000;
+
+    {{- if and (not .Values.databaseSecret) .Values.server.databaseUrl }}
+    database-url: {{ .Values.server.databaseUrl | quote }}
+    {{- end }}
 
     # Auth
-    auth-file: "/var/cache/ntfy/user.db"
     auth-default-access: {{ .Values.server.authDefaultAccess | quote }}
     enable-signup: {{ .Values.server.enableSignup }}
     enable-login: {{ .Values.server.enableLogin }}

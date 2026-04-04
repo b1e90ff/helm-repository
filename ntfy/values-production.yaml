@@ -1,21 +1,7 @@
 server:
   baseUrl: "https://ping.tat.systems"
 
-credentialsSecret: ntfy-credentials
-
-users:
-  - name: cluster
-    passwordKey: cluster-password
-    role: user
-    access:
-      - topic: "*"
-        permission: wo
-  - name: mobile
-    passwordKey: mobile-password
-    role: user
-    access:
-      - topic: "*"
-        permission: ro
+databaseSecret: ntfy-db-credentials
 
 externalRouting:
   enabled: true
