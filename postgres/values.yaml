@@ -3,4 +3,4 @@ service:
   port: 5432
 
 postgres:
-  ip: ""
+  ip: "127.0.0.1"
