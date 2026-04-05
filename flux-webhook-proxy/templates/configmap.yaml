@@ -22,40 +22,52 @@ data:
                 obj = body.get("involvedObject", {})
                 kind = obj.get("kind", "Unknown")
                 name = obj.get("name", "unknown")
+                namespace = obj.get("namespace", "")
                 message = body.get("message", "No message")
                 metadata = body.get("metadata", {})
-                env = metadata.get("env", "")
                 cluster = metadata.get("cluster", "")
 
                 msg_lower = message.lower()
 
                 if severity == "error":
                     priority = 5
-                    tags = ["rotating_light"]
+                    tags = ["rotating_light", "fire"]
                     title = f"[{cluster}] {kind}/{name}"
+                    status = "Error"
                 elif "rollback" in msg_lower:
                     priority = 4
-                    tags = ["warning"]
+                    tags = ["warning", "arrows_counterclockwise"]
                     title = f"[{cluster}] Rollback: {name}"
+                    status = "Rollback"
                 elif "succeeded" in msg_lower or "applied" in msg_lower:
                     priority = 3
-                    tags = ["white_check_mark"]
+                    tags = ["white_check_mark", "package"]
                     title = f"[{cluster}] {name}"
+                    status = "Success"
                 else:
                     priority = 3
                     tags = ["information_source"]
                     title = f"[{cluster}] {kind}/{name}"
+                    status = "Info"
+
+                lines = [f"**{status}:** {message}"]
+                if namespace:
+                    lines.append(f"Namespace: `{namespace}`")
+                lines.append(f"Resource: `{kind}/{name}`")
 
                 ntfy_payload = json.dumps({
                     "title": title,
-                    "message": message,
+                    "message": "\n".join(lines),
                     "priority": priority,
                     "tags": tags,
+                    "markdown": True,
                 }).encode()
 
+                # Build headers — protect Content-Type from being overwritten
                 headers = {"Content-Type": "application/json"}
                 try:
                     extra = json.loads(NTFY_HEADERS_RAW)
+                    extra.pop("Content-Type", None)
                     headers.update(extra)
                 except Exception:
                     pass
