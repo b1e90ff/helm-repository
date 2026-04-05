@@ -2,4 +2,4 @@ apiVersion: v2
 name: flux-webhook-proxy
 description: Transforms FluxCD notification events into formatted push notifications
 type: application
-version: 1.0.0
+version: 1.0.1
