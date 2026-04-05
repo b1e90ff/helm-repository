@@ -32,19 +32,19 @@ data:
                 if severity == "error":
                     priority = 5
                     tags = ["rotating_light"]
-                    title = f"[{env}] {kind}/{name}"
+                    title = f"[{cluster}] {kind}/{name}"
                 elif "rollback" in msg_lower:
                     priority = 4
                     tags = ["warning"]
-                    title = f"[{env}] Rollback: {name}"
+                    title = f"[{cluster}] Rollback: {name}"
                 elif "succeeded" in msg_lower or "applied" in msg_lower:
                     priority = 3
                     tags = ["white_check_mark"]
-                    title = f"[{env}] {name}"
+                    title = f"[{cluster}] {name}"
                 else:
                     priority = 3
                     tags = ["information_source"]
-                    title = f"[{env}] {kind}/{name}"
+                    title = f"[{cluster}] {kind}/{name}"
 
                 ntfy_payload = json.dumps({
                     "title": title,
