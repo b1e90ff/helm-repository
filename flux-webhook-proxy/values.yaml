@@ -1,0 +1,21 @@
+image:
+  repository: python
+  tag: 3-alpine
+  pullPolicy: IfNotPresent
+
+service:
+  port: 80
+
+# Target notification service (set via environment from secret)
+target:
+  secretName: ""
+  urlKey: address
+  authHeaderKey: headers
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 64Mi
+  requests:
+    cpu: 10m
+    memory: 32Mi
